@@ -8,7 +8,7 @@
 </p>
 <p align="center">
 
-Official PyTorch implementation of the publication Residual Skill Policies: Learning an Adaptable Skill-based Action Space for Reinforcement Learning for Robotics (CoRL 2022)
+Official PyTorch implementation for the publication Residual Skill Policies: Learning an Adaptable Skill-based Action Space for Reinforcement Learning for Robotics (CoRL 2022)
 
 ## Requirements
 
