@@ -72,9 +72,9 @@ All results are logged using [Weights and Biases](https://wandb.ai). An account 
 ## Code Structure
 ```
 reskill
-	 |-- data 		# collected demonstration data
-	 |-- reskill		# contains all executable code 
-	 |   |-- configs 	# all config files for experiments
+   |-- data 		# collected demonstration data
+   |-- reskill		# contains all executable code 
+   |   |-- configs 	# all config files for experiments
 	 |   |   |-- rl  	# config files for rl experiements
 	 |   |   `-- skill_mdl	# config files for both skill vae and skill prior
 	 |   |-- data		# dataset specifc code for collection and loading
