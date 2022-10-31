@@ -1,5 +1,9 @@
 # Residual Skill Policies: Learning an Adaptable Skill-based Action Space for Reinforcement Learning for Robotics
 
+[![QUT Centre for Robotics Open Source](https://github.com/qcr/qcr.github.io/raw/master/misc/badge.svg)](https://qcr.github.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 [[Paper]](https://openreview.net/pdf?id=BVZdCKCy3W)
 [[Project Page]](https://krishanrana.github.io/reskill)
 
