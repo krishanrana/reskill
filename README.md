@@ -64,6 +64,10 @@ To train the ReSkill agent using the trained skill modules, run the following co
 ```
 python train_reskill_agent.py --config_file table_cleanup/config.yaml --datatset_name fetch_block_40000
 ```
+  
+## Logging
+  
+All results are logged using [Weights and Biases](https://wandb.ai). An account and initial login is required to initialise logging as described on thier website.
 
 
 ## Citation
