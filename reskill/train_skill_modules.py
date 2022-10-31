@@ -27,23 +27,25 @@ class ModelTrainer():
         os.makedirs(self.save_dir, exist_ok=True)
         self.vae_save_path = self.save_dir + "skill_vae.pth"
         self.sp_save_path = self.save_dir + "skill_prior.pth"
-        config_fn = "configs/skill_mdl/" + config_file
+        config_path = "configs/skill_mdl/" + config_file
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print("Device: ", self.device)
 
 
-        with open(config_fn, 'r') as file:
-            self.configs = yaml.safe_load(file)
-            self.configs = AttrDict(self.configs)        
+        with open(config_path, 'r') as file:
+            conf = yaml.safe_load(file)
+            conf = AttrDict(conf)
+        for key in conf:
+            conf[key] = AttrDict(conf[key])        
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(0.5, 0.5)])          
-        train_data = SkillsDataset(dataset_name, phase="train", subseq_len=self.configs.skill_vae["subseq_len"], transform=transform)
-        val_data   = SkillsDataset(dataset_name, phase="val", subseq_len=self.configs.skill_vae["subseq_len"], transform=transform)
+        train_data = SkillsDataset(dataset_name, phase="train", subseq_len=conf.skill_vae.subseq_len, transform=transform)
+        val_data   = SkillsDataset(dataset_name, phase="val", subseq_len=conf.skill_vae.subseq_len, transform=transform)
 
         self.train_loader = DataLoader(
             train_data,
-            batch_size = self.configs.skill_vae["batch_size"],
+            batch_size = conf.skill_vae.batch_size,
             shuffle = True,
             drop_last=True,
             prefetch_factor=30,
@@ -59,16 +61,18 @@ class ModelTrainer():
             num_workers=8,
             pin_memory=True)
 
-        self.skill_vae = SkillVAE(n_actions=self.configs.skill_vae["n_actions"], n_obs=self.configs.skill_vae["n_obs"], n_hidden=self.configs.skill_vae["n_hidden"],
-                                  seq_length=self.configs.skill_vae["subseq_len"], n_z=self.configs.skill_vae["n_z"], device=self.device).to(self.device)
+        self.skill_vae = SkillVAE(n_actions=conf.skill_vae.n_actions, n_obs=conf.skill_vae.n_obs, n_hidden=conf.skill_vae.n_hidden,
+                                  seq_length=conf.skill_vae.subseq_len, n_z=conf.skill_vae.n_z, device=self.device).to(self.device)
         
-        self.optimizer = optim.Adam(self.skill_vae.parameters(), lr=self.configs.skill_vae["lr"])
+        self.optimizer = optim.Adam(self.skill_vae.parameters(), lr=conf.skill_vae.lr)
 
-        self.sp_nvp = stacked_NVP(d=self.configs.skill_prior_nvp["d"], k=self.configs.skill_prior_nvp["k"], n_hidden=self.configs.skill_prior_nvp["n_hidden"],
-                                  state_size=self.configs.skill_vae["n_obs"], n=self.configs.skill_prior_nvp["n_coupling_layers"], device=self.device).to(self.device)
+        self.sp_nvp = stacked_NVP(d=conf.skill_prior_nvp.d, k=conf.skill_prior_nvp.k, n_hidden=conf.skill_prior_nvp.n_hidden,
+                                  state_size=conf.skill_vae.n_obs, n=conf.skill_prior_nvp.n_coupling_layers, device=self.device).to(self.device)
         
-        self.sp_optimizer = torch.optim.Adam(self.sp_nvp.parameters(), lr=self.configs.skill_prior_nvp["sp_lr"])
+        self.sp_optimizer = torch.optim.Adam(self.sp_nvp.parameters(), lr=conf.skill_prior_nvp.sp_lr)
         self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.sp_optimizer, 0.999)
+
+        self.n_epochs = conf.skill_vae.epochs
 
 
     def fit(self, epoch):
@@ -132,7 +136,7 @@ class ModelTrainer():
 
     def train(self):
         print("Training...") 
-        for epoch in tqdm(range(self.configs.skill_vae["epochs"])):
+        for epoch in tqdm(range(self.n_epochs)):
             train_epoch_loss = self.fit(epoch)
             if epoch%5 == 0:
                 val_epoch_loss = self.validate()
@@ -156,7 +160,5 @@ if __name__ == "__main__":
     wandb.run.name = "skill_mdl_" + time.asctime()
     wandb.run.save()
 
-    dataset_name = args.dataset_name
-    config_file = args.config_file
-    trainer = ModelTrainer(dataset_name, config_file)
+    trainer = ModelTrainer(args.dataset_name, args.config_file)
     trainer.train()

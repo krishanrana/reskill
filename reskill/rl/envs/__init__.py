@@ -16,9 +16,6 @@ def class_exist(className):
     return True if cls else False
 
 
-# Robotics
-# ----------------------------------------
-
 for num_blocks in [1, 2, 3, 4, 5, 6]:
 
     # Default reward type is incremental

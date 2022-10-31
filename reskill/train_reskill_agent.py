@@ -7,13 +7,8 @@ import wandb
 import time
 import numpy as np
 import os
-from torch.distributions.multivariate_normal import MultivariateNormal
-from torch.distributions.uniform import Uniform
-from torch.distributions.normal import Normal
-from torchvision import transforms
 from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
 from reskill.rl.agents.ppo import PPO
-import reskill.rl.agents.ppo_core as core
 from reskill.utils.general_utils import AttrDict
 import reskill.rl.envs
 import math
@@ -29,7 +24,7 @@ def get_obs(obs):
 def logistic_fn(step, k=0.001, C=18000):
     return 1/(1 + math.exp(-k * (step-C)))
 
-def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path, save_path_residual):
+def train(agent, residual_agent, env, skill_vae, skill_prior, save_path, save_path_residual):
 
     obs, ep_ret, ep_len = env.reset(), 0, 0
     o = get_obs(obs)
@@ -41,8 +36,10 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path
 
     for epoch in tqdm(range(agent.epochs)):
         for t in range(local_steps_per_epoch):
+            # Select noise vector using high-level policy
             n, v, logp, mu, std = agent.ac.step(torch.as_tensor(o, dtype=torch.float32))
             sample = AttrDict(noise=n, state=o)
+            # Warp noise vector to latent space skill
             z = skill_prior.inverse(sample).noise.detach()
 
             if proc_id() == 0:
@@ -53,7 +50,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path
 
             o2, skill_r = o, 0
         
-            for _ in range(seq_len):
+            for _ in range(skill_vae.seq_len):
 
                 obs_z = torch.cat((o2,z), 1)
                 a_dec = skill_vae.decoder(obs_z)
@@ -73,8 +70,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path
                     wandb.log({"action y_vel": a[1]}, env_step_cnt)
                     wandb.log({"residual_action x_vel": a_res[0][0]}, env_step_cnt)
                     wandb.log({"residual_action y_vel": a_res[0][1]}, env_step_cnt)
-                    
-                
+                             
                 skill_r += r #Sum rewards for high level policy
                 ep_ret += r
                 ep_len += 1
@@ -86,7 +82,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path
                 residual_agent.buf.store(o_res.cpu().detach(), a_res.cpu().detach(), r, v_res, logp_res)
 
             # Update residual action weighting factor
-            residual_factor = logistic_fn(env_step_cnt)
+            residual_factor = logistic_fn(env_step_cnt, k=0.001, C=18000)
             if proc_id() == 0:
                 wandb.log({"logistic_fn": residual_factor}, env_step_cnt)
 
@@ -141,30 +137,28 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, seq_len, save_path
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser()
+    import yaml
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--config_file', type=str, default="config.yaml")
+    parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
+    args=parser.parse_args()
 
-    parser.add_argument('--env', type=str, default="FetchCleanUp1Block-v0")
-    parser.add_argument('--exp_name', type=str, default='reskill_agent')
-    parser.add_argument('--hid', type=int, default=64)
-    parser.add_argument('--l', type=int, default=2)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--seed', '-s', type=int, default=21)
-    parser.add_argument('--cpu', type=int, default=15)
-    parser.add_argument('--steps', type=int, default=3000) 
-    parser.add_argument('--epochs', type=int, default=800)
-    args = parser.parse_args()
+    config_path = "configs/rl/" + args.config_file
+    with open(config_path, 'r') as file:
+        conf = yaml.safe_load(file)
+        conf = AttrDict(conf)
+    for key in conf:
+        conf[key] = AttrDict(conf[key])
 
-    mpi_fork(args.cpu)  #  run parallel code with mpi
+    mpi_fork(conf.setup.cpu)  #  run parallel code with mpi
 
     if proc_id() == 0:
-        wandb.init(project=args.exp_name)
-        wandb.run.name = args.env + "_RESIDUAL_PPO_seed_" + str(args.seed) + time.asctime().replace(' ', '_')
+        wandb.init(project=conf.setup.exp_name)
+        wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
 
-    env = gym.make(args.env)
-    test_env = gym.make(args.env)
-    dataset_name = "fetch_block_40000"
+    env = gym.make(conf.setup.env) 
 
-    save_dir = "./results/saved_rl_models/" + dataset_name + "/"
+    save_dir = "./results/saved_rl_models/" + args.dataset_name + "/"
     os.makedirs(save_dir, exist_ok=True)
     save_path = save_dir + "ppo_agent.pth"
     save_path_residual = save_dir + "ppo_residual_agent.pth"
@@ -172,60 +166,57 @@ def main():
     torch.set_num_threads(torch.get_num_threads())
 
     # Load skills module
-    skill_vae_path = "./results/saved_skill_models/" + dataset_name + "/skill_vae.pth"
+    skill_vae_path = "./results/saved_skill_models/" + args.dataset_name + "/skill_vae.pth"
     skill_vae = torch.load(skill_vae_path, map_location=device)
     # Load skill prior module
-    skill_prior_path = "./results/saved_skill_models/" + dataset_name + "/skill_prior.pth"
+    skill_prior_path = "./results/saved_skill_models/" + args.dataset_name + "/skill_prior.pth"
     skill_prior = torch.load(skill_prior_path, map_location=device)
     for i in skill_prior.bijectors:
         i.device = device
-
 
     n_features = skill_vae.n_z
     n_obs = skill_vae.n_obs
     seq_len = skill_vae.seq_len
 
-    agent = PPO(ac_kwargs=dict(hidden_sizes=[args.hid]*args.l),
-                gamma=args.gamma, 
-                seed=args.seed, 
-                steps_per_epoch=args.steps, 
-                epochs=args.epochs,
-                clip_ratio=0.3, 
-                pi_lr=1e-4,
-                vf_lr=1e-3, 
-                train_pi_iters=180, 
-                train_v_iters=180, 
-                lam=0.97, 
-                max_ep_len=50,
-                target_kl=0.3, 
+    skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+                gamma=conf.skill_agent.gamma, 
+                seed=conf.setup.seed, 
+                steps_per_epoch=conf.skill_agent.steps_per_epoch, 
+                epochs=conf.setup.epochs,
+                clip_ratio=conf.skill_agent.clip_ratio, 
+                pi_lr=conf.skill_agent.pi_lr,
+                vf_lr=conf.skill_agent.vf_lr, 
+                train_pi_iters=conf.skill_agent.train_pi_iters, 
+                train_v_iters=conf.skill_agent.train_v_iters, 
+                lam=conf.skill_agent.lam, 
+                max_ep_len=conf.setup.max_ep_len,
+                target_kl=conf.skill_agent.target_kl, 
                 obs_dim=n_obs, 
                 act_dim=n_features, 
                 act_limit=2)
     
-    residual_agent = PPO(ac_kwargs=dict(hidden_sizes=[args.hid]*args.l),
-                        gamma=args.gamma, 
-                        seed=args.seed, 
-                        steps_per_epoch=(args.steps*seq_len), 
-                        epochs=args.epochs,
-                        clip_ratio=0.3, 
-                        pi_lr=1e-4,
-                        vf_lr=1e-3, 
-                        train_pi_iters=180, 
-                        train_v_iters=180, 
-                        lam=0.97, 
-                        max_ep_len=50,
-                        target_kl=0.9, 
+    residual_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.residual_agent.hid]*conf.residual_agent.l),
+                        gamma=conf.residual_agent.gamma, 
+                        seed=conf.setup.seed, 
+                        steps_per_epoch=(conf.skill_agent.steps_per_epoch*seq_len), 
+                        epochs=conf.setup.epochs,
+                        clip_ratio=conf.residual_agent.clip_ratio, 
+                        pi_lr=conf.residual_agent.pi_lr,
+                        vf_lr=conf.residual_agent.vf_lr, 
+                        train_pi_iters=conf.residual_agent.train_pi_iters, 
+                        train_v_iters=conf.residual_agent.train_v_iters,
+                        lam=conf.residual_agent.lam, 
+                        target_kl=conf.residual_agent.target_kl, 
                         obs_dim=n_obs + n_features + env.action_space.shape[0], 
                         act_dim=env.action_space.shape[0], 
                         act_limit=1)
 
     print("Training RL agent...")
-    train(agent=agent,
+    train(agent=skill_agent,
           residual_agent=residual_agent,  
           env=env,
           skill_vae=skill_vae,
           skill_prior=skill_prior,
-          seq_len=seq_len,
           save_path=save_path,
           save_path_residual=save_path_residual)
 
