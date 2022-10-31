@@ -6,7 +6,6 @@ import gym
 from gym import error, spaces
 from gym.utils import seeding
 from mujoco_py import GlfwContext
-from dm_control import mujoco
 import pdb
 
 
