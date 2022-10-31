@@ -267,6 +267,7 @@ class FetchStackEnv(robot_env.RobotEnv):
         achieved_goal = []
 
         for i in range(self.num_blocks):
+        # for i in range(1):
 
             object_i_pos = self.sim.data.get_site_xpos(self.object_names[i])
             # rotations

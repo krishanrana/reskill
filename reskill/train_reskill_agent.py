@@ -17,8 +17,11 @@ import math
 device = torch.device('cpu')
 
 
-def get_obs(obs):
-    out = torch.FloatTensor(np.concatenate((obs["observation"], obs["desired_goal"]))).unsqueeze(dim=0).to(device)
+def get_obs(obs, env_name):
+    if env_name == "FetchPyramidStack-v0": 
+        out = torch.FloatTensor(np.concatenate((obs["observation"][:-6], obs["desired_goal"][-3:]))).unsqueeze(dim=0).to(device)
+    else:
+        out = torch.FloatTensor(np.concatenate((obs["observation"], obs["desired_goal"]))).unsqueeze(dim=0).to(device)
     return out
 
 def logistic_fn(step, k=0.001, C=18000):
@@ -27,8 +30,9 @@ def logistic_fn(step, k=0.001, C=18000):
 def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
           save_path, save_path_residual):
 
+    env_name = env.spec.id
     obs, ep_ret, ep_len = env.reset(), 0, 0
-    o = get_obs(obs)
+    o = get_obs(obs, env_name)
 
     env_step_cnt = 0
     residual_factor = 0.0
@@ -76,7 +80,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
                 ep_ret += r
                 ep_len += 1
 
-                o2 = get_obs(obs)
+                o2 = get_obs(obs, env_name)
                 a_dec = skill_vae.decoder(torch.cat((o2,z), 1))
                 o2_res = torch.cat((o2,z,a_dec), 1)
 
@@ -91,7 +95,6 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
             agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v, logp)
 
             o = o2
-
             t += 1
 
             timeout = ep_len >= agent.max_ep_len
@@ -114,7 +117,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
                     if proc_id() == 0:
                         wandb.log({"Episode Return": ep_ret}, env_step_cnt)
                 obs, ep_ret, ep_len = env.reset(), 0, 0
-                o = get_obs(obs)
+                o = get_obs(obs, env_name)
 
         # Save model
         if (epoch % agent.save_freq == 0) or (epoch == agent.epochs-1):
@@ -157,7 +160,7 @@ def main():
         wandb.init(project=conf.setup.exp_name)
         wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
 
-    env = gym.make(conf.setup.env) 
+    env = gym.make(conf.setup.env)
 
     save_dir = "./results/saved_rl_models/" + args.dataset_name + "/"
     os.makedirs(save_dir, exist_ok=True)

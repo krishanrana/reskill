@@ -23,7 +23,7 @@ class FetchStackingEnv(fetch_stack_env.FetchStackEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
 
 
-class FetchCleanUp(fetch_stack_env.FetchStackEnv, utils.EzPickle):
+class FetchCleanUpEnv(fetch_stack_env.FetchStackEnv, utils.EzPickle):
     def __init__(self, reward_info='cleanup_1block', use_fixed_goal=True, use_force_sensor=True):
         initial_qpos = {
             'robot0:slide0': 0.405,
