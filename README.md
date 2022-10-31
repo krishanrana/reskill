@@ -84,7 +84,7 @@ reskill
    |   |   |-- agents		# implements core algorithms for rl agents
    |   |   |-- envs		# defines the set of environments for data collection and training
    |   |   `-- utils		# utilities for multiprocessing and training distributed rl agents
-   |   |-- utils		# general utilise for data management and testing trained modules
+   |   |-- utils		# general utilities for data management and testing trained modules
    |   |   `-- controllers 	# set of scripted controllers used for data collection
    |   `-- wandb		# logging data from wandb
 ```
