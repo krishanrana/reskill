@@ -37,14 +37,14 @@ cd reskill
 conda env create -f environment.yml
 conda activate reskill_new
 pip install -e .
+cd reskill
 
 ```
 
 ## Training Commands
-To collect a dataset using the scripted controllers run the following commands:
+To collect a dataset using the scripted controllers run the following command:
 ```
-cd reskill/data
-python collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block
+python data/collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block
 ```
 There are two sets of tasks `block` and `hook`
 The dataset collected for the `block` tasks can be used to train a downstream RL agent in the `FetchPyramidStack-v0`, `FetchCleanUp-v0` and `FetchSlipperyPush-v0` environments.
