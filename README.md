@@ -47,7 +47,7 @@ cd reskill/data
 python collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block
 ```
 
-To train the skill module on the collected dataset run the following command:
+To train the skill modules on the collected dataset run the following command:
 ```
 python train_skill_modules.py --config_file config.yaml --dataset_name fetch_block_40000
 ```
