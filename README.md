@@ -16,10 +16,6 @@ Official PyTorch implementation for the publication Residual Skill Policies: Lea
 - mujoco 2.1
 - Ubuntu 18.04
 
-
-
-
-
 ## Installation Instructions
 
 To install MuJoCo follow the instructions [here](https://github.com/openai/mujoco-py).
@@ -41,6 +37,22 @@ pip install -e .
 ```
 
 ## Training Commands
+To collect a dataset using the scripted controllers run the following commands:
+```
+cd reskill/data
+python collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block\
+```
+
+To train the skill module on the collected dataset run the following command:
+```
+python train_skill_modules.py --config_file config.yaml --dataset_name fetch_block_40000
+```
+To train the ReSkill agent using the trained skill modules, run the following command:
+
+```
+python train_reskill_agent.py --config_file config.yml --datatset_name fetch_block_40000
+```
+
 
 ## Citation
 
