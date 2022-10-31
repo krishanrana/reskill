@@ -1,11 +1,12 @@
 setup:
-  env: "FetchCleanUp1Block-v0"
+  env: "FetchCleanUp-v0"
   exp_name: "reskill_agent"
   cpu: 15
   seed: 21
   epochs: 800
   max_ep_len: 50
-  logistic_k: 
+  logistic_C: 18000
+  logistic_k: 0.001
   
 skill_agent:
   hid: 64

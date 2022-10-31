@@ -152,7 +152,7 @@ class ModelTrainer():
 if __name__ == "__main__":
 
     parser=argparse.ArgumentParser()
-    parser.add_argument('--config_file', type=str, default="config.yaml")
+    parser.add_argument('--config_file', type=str, default="block/config.yaml")
     parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
     args=parser.parse_args()
     

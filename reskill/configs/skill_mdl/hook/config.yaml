@@ -1,0 +1,17 @@
+
+skill_vae:
+    epochs: 200
+    batch_size: 128
+    lr: 0.0001
+    n_actions: 4
+    n_obs: 43
+    n_z: 4
+    n_hidden: 128
+    subseq_len: 10
+
+skill_prior_nvp:
+    n_coupling_layers: 4
+    d: 4 #should be the same as n_z
+    k : 2 #int(d/2)
+    sp_lr: 0.001
+    n_hidden: 512

@@ -1,0 +1,42 @@
+setup:
+  env: "FetchSlipperyPush-v0"
+  exp_name: "reskill_agent"
+  cpu: 15
+  seed: 21
+  epochs: 800
+  max_ep_len: 50
+  logistic_C: 18000
+  logistic_k: 0.001
+  
+skill_agent:
+  hid: 64
+  l: 2
+  gamma: 0.99
+  steps_per_epoch: 3000 
+  clip_ratio: 0.3
+  pi_lr: 0.0001
+  vf_lr: 0.001
+  train_pi_iters: 180 
+  train_v_iters: 180 
+  lam: 0.97 
+  target_kl: 0.3   
+  act_limit: 2
+
+residual_agent:
+  hid: 64
+  l: 2
+  gamma: 0.99
+  clip_ratio: 0.3
+  pi_lr: 0.0001
+  vf_lr: 0.001
+  train_pi_iters: 180 
+  train_v_iters: 180 
+  lam: 0.97 
+  target_kl: 0.9   
+  act_limit: 1
+
+
+
+
+
+

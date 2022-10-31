@@ -163,43 +163,14 @@ class FetchStackEnv(robot_env.RobotEnv):
             return -(dist_r + dist_b)
         elif self.reward_info == 'place_blue':
             dist_b = np.linalg.norm(achieved_goal[3:5] - goal[0:2], axis=-1)
-
-
-            # sparse
-            # if dist_b < 0.05:
-            #     return 1.0
-            # else:
-            #     return 0.0
-            
-            # dense
             return np.exp(-20*dist_b)
 
         elif self.reward_info == 'place':
             dist_b = np.linalg.norm(achieved_goal[0:2] - goal[0:2], axis=-1)
-            #sparse
-            if dist_b < 0.03: #0.06
+            if dist_b < 0.03: 
                 return 1.0
             else:
                 return 0.0
-            
-            # dense
-            #return np.exp(-20*dist_b)
-
-        elif self.reward_info == "stacking":
-            dist_b = np.linalg.norm(achieved_goal[3:5] - goal[0:2], axis=-1)
-            dist_r = np.linalg.norm(achieved_goal[1:3] - goal[3:5], axis=-1)
-
-            if dist_b < 0.05:
-                rew_b = 0.5
-            else:
-                rew_b = 0.0
-
-            if dist_r < 0.05:
-                rew_r = 0.5
-            else:
-                rew_r = 0.0
-            
-            return rew_b + rew_r
 
         elif self.reward_info == "cleanup":
 
@@ -232,37 +203,14 @@ class FetchStackEnv(robot_env.RobotEnv):
             else:
                 return 0.0
 
-        #TODO UPDATE THIS REWARD!!!!!!!!!!!!!!
         elif self.reward_info == "stack_red":
-            #target  = goal
             target  = obs['observation'][19:22]
             dist = np.linalg.norm(achieved_goal[0:2] - target[0:2], axis=-1)
-            # penalty_dist = -np.linalg.norm(goal[0:2] - target[0:2], axis=-1)*0.001
-            # if dist < 0.08 and achieved_goal[2]>0.46:# and gripper_state[0] > 0.027 and gripper_state[1] > 0.027:# and  achieved_goal[2]<0.65 and gripper_pos[2] > 0.5: # hover above the blue block
             if dist < 0.08 and achieved_goal[2]>0.492 and achieved_goal[2]<0.498:
                 if abs(np.mean(obs['force_sensor']))>1e-7 and dist < 0.04:
                     return 1.00
                 else:
                     return 0.75
-
-            # if dist < 0.05 and achieved_goal[2]>0.492 and gripper_pos[2] > 0.5: # hover above the blue block
-                #return 1.0
-
-                #     return 1.0
-
-                #    return 1.0 #np.clip(np.exp(10*gripper_pos[2] - 5), 0, 1)    
-                    # if gripper_state[0] > 0.027 or gripper_state[1] > 0.027:
-                    #     return 1.0
-                    # else:
-                    #     return 0.5
-                    #return 1.0 #np.clip(np.exp(10*gripper_pos[2] - 5), 0.5, 1)
-                    # if gripper_state[0] > 0.025 and gripper_state[1] > 0.025:
-                    #     return 1.0
-                    # else:
-                    #     return 0.5
-                        # return (np.clip(np.exp(10*gripper_pos[2] - 5), 0.5, 1) * 0.1) + 0.1
-                #else:
-                #    return 0.0
             else:
                 return 0.0
                
@@ -480,17 +428,6 @@ class FetchStackEnv(robot_env.RobotEnv):
                     object_xpos = self.initial_gripper_xpos[:2] + (self.np_random.uniform(-self.obj_range, self.obj_range,
                                                                                          size=2)-0.05) #-0.05) # TODO FOR THE CLEANUP ENV
                 object_qpos[:2] = object_xpos
-            
-            # pdb.set_trace()
-
-            # # # TODO: REMOVE THIS!!!! JUST FOR FORCE SENSOR TESTING
-            # if i == 0:
-            #     object_qpos[0] = 1.2914489
-            #     object_qpos[1] = 0.61488086
-
-            # print(object_qpos[:2])
-
-            
 
 
             prev_x_positions.append(object_qpos[:2])
@@ -512,9 +449,6 @@ class FetchStackEnv(robot_env.RobotEnv):
         else:
             min_goals_along_stack = 1
 
-
-
-        # TODO: was 0.66
         if np.random.uniform() < 1.0 - self.goals_on_stack_probability:
             max_goals_along_stack = 0
             min_goals_along_stack = 0
@@ -555,10 +489,6 @@ class FetchStackEnv(robot_env.RobotEnv):
                 goal_i += self.target_offset
                 goal_i[2] = self.height_offset
                 
-                # # TODO was 0.2
-                # if np.random.uniform() < 0.2 and not goal_in_air_used:
-                #     goal_i[2] += self.np_random.uniform(0.03, 0.1)
-                #     goal_in_air_used = True
 
             prev_x_positions.append(goal_i[:2])
             goals.append(goal_i)
@@ -568,17 +498,13 @@ class FetchStackEnv(robot_env.RobotEnv):
             # 1 block env
             if self.num_blocks == 1:
                 if self.reward_info == "stack_red":
-                    goals = [[1.416193226, 0.9074910037, 0.4245288], [0.0, 0.0, 0.0]] #block stacking
-                    # goals = [[1.416193226, 0.9074910037, 0.4245288], [0.0, 0.0, 0.0]] #push
-                    #goals = [[1.316193226, 0.7074910037, 0.4245288], [0.0, 0.0, 0.0]] #push
+                    goals = [[1.416193226, 0.9074910037, 0.4245288], [0.0, 0.0, 0.0]]
                 elif self.reward_info == "cleanup_1block":
                     goals = [[1.416193226, 1.074910037, 0.4245288], [0.0, 0.0, 0.0]]
                 else:
-                    # goals = [[1.416193226, 1.074910037, 0.4245288], [0.0, 0.0, 0.0]] #cleanup
-                    goals = [[1.316193226, 0.7074910037, 0.4245288], [0.0, 0.0, 0.0]] #push
+                    goals = [[1.316193226, 0.7074910037, 0.4245288], [0.0, 0.0, 0.0]]
 
             elif self.num_blocks == 2: # 2 block env
-                #goals = [[1.34193226, 0.74910037, 0.4245288], [1.34193226, 0.74910037, 0.4745288], [0.0, 0.0, 0.0]]
                 goals = [[1.4, 1.06, 0.42], [1.40, 1.06, 0.42], [0.0, 0.0, 0.0]]
 
         if not return_extra_info:
@@ -594,19 +520,6 @@ class FetchStackEnv(robot_env.RobotEnv):
         else:
             return False
 
-        # TODO replace with above code, right now we only care about d1:
-
-        # d1 = self.sub_goal_distances(achieved_goal, desired_goal)[0]
-        # if -(d1 > self.distance_threshold).astype(np.float32) == 0:
-        #     return True
-        # else:
-        #     return False
-
-        # d2 = self.sub_goal_distances(achieved_goal, desired_goal)[1]
-        # if -(d2 > self.distance_threshold).astype(np.float32) == 0:
-        #     return True
-        # else:
-        #     return False
 
     def _env_setup(self, initial_qpos):
         for name, value in initial_qpos.items():

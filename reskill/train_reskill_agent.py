@@ -24,7 +24,8 @@ def get_obs(obs):
 def logistic_fn(step, k=0.001, C=18000):
     return 1/(1 + math.exp(-k * (step-C)))
 
-def train(agent, residual_agent, env, skill_vae, skill_prior, save_path, save_path_residual):
+def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
+          save_path, save_path_residual):
 
     obs, ep_ret, ep_len = env.reset(), 0, 0
     o = get_obs(obs)
@@ -82,7 +83,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, save_path, save_pa
                 residual_agent.buf.store(o_res.cpu().detach(), a_res.cpu().detach(), r, v_res, logp_res)
 
             # Update residual action weighting factor
-            residual_factor = logistic_fn(env_step_cnt, k=0.001, C=18000)
+            residual_factor = logistic_fn(env_step_cnt, k=logistic_k, C=logistic_C)
             if proc_id() == 0:
                 wandb.log({"logistic_fn": residual_factor}, env_step_cnt)
 
@@ -139,7 +140,7 @@ def main():
     import argparse
     import yaml
     parser=argparse.ArgumentParser()
-    parser.add_argument('--config_file', type=str, default="config.yaml")
+    parser.add_argument('--config_file', type=str, default="table_cleanup/config.yaml")
     parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
     args=parser.parse_args()
 
@@ -217,6 +218,8 @@ def main():
           env=env,
           skill_vae=skill_vae,
           skill_prior=skill_prior,
+          logistic_C=conf.setup.logistic_C,
+          logistic_k=conf.setup.logistic_k,
           save_path=save_path,
           save_path_residual=save_path_residual)
 
