@@ -69,6 +69,27 @@ python train_reskill_agent.py --config_file table_cleanup/config.yaml --datatset
   
 All results are logged using [Weights and Biases](https://wandb.ai). An account and initial login is required to initialise logging as described on thier website.
 
+## Code Structure
+```
+reskill
+	 |-- data 		# collected demonstration data
+	 |-- reskill		# contains all executable code 
+	 |   |-- configs 	# all config files for experiments
+	 |   |   |-- rl  	# config files for rl experiements
+	 |   |   `-- skill_mdl	# config files for both skill vae and skill prior
+	 |   |-- data		# dataset specifc code for collection and loading
+	 |   |-- models		# holds all model classes that implement forward and loss
+	 |   |-- results		# stores all trained pytorch models for both skill and rl modules
+	 |   |-- rl		# all code related to rl
+	 |   |   |-- agents	# implements core algorithms for rl agents
+	 |   |   |-- envs	# defines the set of environments for data collection and training
+	 |   |   `-- utils	# utilities for multiprocessing and training distributed rl agents
+	 |   |-- utils		# general utilise for data management and testing trained modules
+	 |   |   `-- controllers # set of scripted controllers used for data collection
+	 |   `-- wandb		# logging data from wandb
+```
+
+
 
 ## Citation
 
