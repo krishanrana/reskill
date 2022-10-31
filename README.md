@@ -110,6 +110,8 @@ This is due to a Pillow version mismatch between the versions installed by mujoc
 ```
 conda install pillow=6.1
 ```
+---
+  
 ```
 Creating window glfw
 ERROR: GLEW initalization error: Missing GL version
