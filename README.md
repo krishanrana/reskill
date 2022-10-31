@@ -12,11 +12,33 @@ Official PyTorch implementation for the publication Residual Skill Policies: Lea
 
 ## Requirements
 
+- python 3.7+
+- mujoco 2.1
+- Ubuntu 18.04
+
+
+
 
 
 ## Installation Instructions
 
+To install MuJoCo follow the instructions [here](https://github.com/openai/mujoco-py).
 
+Clone the repository
+
+```
+git clone https://github.com/krishanrana/reskill.git
+```
+Ensure [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) is installed and configured for your system.
+Create a conda environment and install all required packages.
+
+```
+cd reskill
+conda env create -f environment.yml
+conda activate reskill_new
+pip install -e .
+
+```
 
 ## Training Commands
 
