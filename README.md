@@ -56,7 +56,6 @@ python train_skill_modules.py --config_file block/config.yaml --dataset_name fet
 ```
 To visualise the performance of the trained skill module run the following command:
 ```
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
 python utils/test_skill_modules.py --dataset_name fetch_block_40000 --task block --use_skill_prior True
 ```
 
