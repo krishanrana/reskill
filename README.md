@@ -40,7 +40,7 @@ pip install -e .
 To collect a dataset using the scripted controllers run the following commands:
 ```
 cd reskill/data
-python collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block\
+python collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block
 ```
 
 To train the skill module on the collected dataset run the following command:
