@@ -54,6 +54,11 @@ To train the skill modules on the collected dataset run the following command:
 ```
 python train_skill_modules.py --config_file block/config.yaml --dataset_name fetch_block_40000
 ```
+To visualise the performance of the trained skill module run the following command:
+```
+python utils/test_skill_modules.py --dataset_name fetch_block_40000 --task block --use_skill_prior True
+```
+
 To train the ReSkill agent using the trained skill modules, run the following command:
 
 ```
