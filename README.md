@@ -101,3 +101,23 @@ reskill
     year={2022}
   }
 ```
+## Troubleshooting
+
+```
+ImportError: cannot import name 'PILLOW_VERSION' from 'PIL'
+```
+This is due to a Pillow version mismatch between the versions installed by mujoco-py and pytorch. A compatible package that fixes the issue is:
+```
+conda install pillow=6.1
+```
+```
+Creating window glfw
+ERROR: GLEW initalization error: Missing GL version
+
+```
+Error when rendering a MuJoCo window for visualisation. This can be fixed by exporting the required package:
+```
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
+```
+
+
