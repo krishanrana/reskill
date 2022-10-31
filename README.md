@@ -52,12 +52,12 @@ The dataset collected for the `hook` task is used to train the downstream RL age
 
 To train the skill modules on the collected dataset run the following command:
 ```
-python train_skill_modules.py --config_file config.yaml --dataset_name fetch_block_40000
+python train_skill_modules.py --config_file block/config.yaml --dataset_name fetch_block_40000
 ```
 To train the ReSkill agent using the trained skill modules, run the following command:
 
 ```
-python train_reskill_agent.py --config_file config.yml --datatset_name fetch_block_40000
+python train_reskill_agent.py --config_file table_cleanup/config.yaml --datatset_name fetch_block_40000
 ```
 
 
