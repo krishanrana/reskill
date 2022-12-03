@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-[[Paper]](https://openreview.net/pdf?id=BVZdCKCy3W)
+[[Paper]](https://arxiv.org/pdf/2211.02231.pdf)
 [[Project Page]](https://krishanrana.github.io/reskill)
 
 <p align="center">
