@@ -41,7 +41,7 @@ cd reskill
 
 ```
 
-## Training Commands
+## Data Collection and Training
 To collect a dataset using the scripted controllers run the following command:
 ```
 python data/collect_demos.py --num_trajectories 40000 --subseq_len 10 --task block
@@ -50,6 +50,8 @@ There are two sets of tasks `block` and `hook`
 The dataset collected for the `block` tasks can be used to train a downstream RL agent in the `FetchPyramidStack-v0`, `FetchCleanUp-v0` and `FetchSlipperyPush-v0` environments.
 The dataset collected for the `hook` task is used to train the downstream RL agent in the `FetchComplexHook-v0` environment.
 We collect the demonstration data for the hook and block based environments in the `FetchHook-v0` and `FetchPlaceMultiGoal-v0` environments respectively.
+
+You can all download a pre-collected dataset from [here](https://drive.google.com/drive/folders/1yTr_6fc-sHXK_CZkm8QIRTV9VgWxKpOE).
 
 To train the skill modules on the collected dataset run the following command:
 ```
