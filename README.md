@@ -51,7 +51,7 @@ The dataset collected for the `block` tasks can be used to train a downstream RL
 The dataset collected for the `hook` task is used to train the downstream RL agent in the `FetchComplexHook-v0` environment.
 We collect the demonstration data for the hook and block based environments in the `FetchHook-v0` and `FetchPlaceMultiGoal-v0` environments respectively.
 
-You can all download a pre-collected dataset from [here](https://drive.google.com/drive/folders/1yTr_6fc-sHXK_CZkm8QIRTV9VgWxKpOE).
+You can also download a pre-collected dataset from [here](https://drive.google.com/drive/folders/1yTr_6fc-sHXK_CZkm8QIRTV9VgWxKpOE). Place each of these folders within the dataset folder of the repository.
 
 To train the skill modules on the collected dataset run the following command:
 ```
